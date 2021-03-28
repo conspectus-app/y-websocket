@@ -22,25 +22,32 @@ const wsReadyStateClosed = 3 // eslint-disable-line
 
 // disable gc when using snapshots!
 const gcEnabled = process.env.GC !== 'false' && process.env.GC !== '0'
-const persistenceDir = process.env.YPERSISTENCE
+const persistenceStorage = process.env.YPERSISTENCE_STORAGE || 'level-db'
+const persistencePath = process.env.YPERSISTENCE
 /**
  * @type {{bindState: function(string,WSSharedDoc):void, writeState:function(string,WSSharedDoc):Promise<any>, provider: any}|null}
  */
 let persistence = null
 if (typeof persistenceDir === 'string') {
-  console.info('Persisting documents to "' + persistenceDir + '"')
+  console.info('Persisting documents to "' + persistencePath + '"')
   // @ts-ignore
-  const LeveldbPersistence = require('y-leveldb').LeveldbPersistence
-  const ldb = new LeveldbPersistence(persistenceDir)
+  let persistenceDB
+  if (persistenceStorage === 'redis') {
+    const RedisPersistence = require('y-redis').RedisPersistence
+    persistenceDB = new RedisPersistence(persistencePath)
+  } else {
+    const LeveldbPersistence = require('y-leveldb').LeveldbPersistence
+    persistenceDB = new LeveldbPersistence(persistencePath)
+  }
   persistence = {
-    provider: ldb,
+    provider: persistenceDB,
     bindState: async (docName, ydoc) => {
-      const persistedYdoc = await ldb.getYDoc(docName)
+      const persistedYdoc = await persistenceDB.getYDoc(docName)
       const newUpdates = Y.encodeStateAsUpdate(ydoc)
-      ldb.storeUpdate(docName, newUpdates)
+      persistenceDB.storeUpdate(docName, newUpdates)
       Y.applyUpdate(ydoc, Y.encodeStateAsUpdate(persistedYdoc))
       ydoc.on('update', update => {
-        ldb.storeUpdate(docName, update)
+        persistenceDB.storeUpdate(docName, update)
       })
     },
     writeState: async (docName, ydoc) => {}
