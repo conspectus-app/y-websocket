@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-const yjs = require('yjs')
+import { saveDeltaToRedis } from './redis-persistence-bridge'
+
 const mysql = require('mysql2')
-const RedisPersistence = require('y-redis').RedisPersistence
 
 const MYSQL_HOST = process.env.MYSQL_HOST || 'localhost'
 const MYSQL_USER = process.env.MYSQL_USER || 'root'
@@ -12,13 +12,6 @@ const MYSQL_TABLE = process.env.MYSQL_TABLE || 'table'
 const MYSQL_CONTENT_FIELD = process.env.MYSQL_CONTENT_FIELD || 'content'
 const MYSQL_KEY_FIELD = process.env.MYSQL_KEY_FIELD || 'id'
 const MYSQL_PORT = process.env.MYSQL_PORT || 3306
-
-const REDIS_HOST = process.env.YPERSISTENCE_PATH || 'localhost'
-const REDIS_PORT = process.env.YPERSISTENCE_POSRT || 6379
-
-const redisPersistence = new RedisPersistence({
-  redisOpts: { host: REDIS_HOST, port: REDIS_PORT }
-})
 
 const mysqlConnection = mysql.createConnection({
   host: MYSQL_HOST,
@@ -49,16 +42,6 @@ mysqlConnection.query(
   }
 )
 
-// needs to be tested
-async function saveDeltaToRedis (docName, delta) {
-  await redisPersistence.clearDocument(docName)
-  const doc = new yjs.Doc()
-  const persistedDoc = redisPersistence.bindState(docName, doc)
-  await persistedDoc.synced
-  doc.getText('note-quill-delta').applyDelta(delta)
-  await persistedDoc.synced
-}
-
 async function processMysqlDeltas (notes) {
   for (const note of notes) {
     const noteCode = note.code
@@ -66,5 +49,3 @@ async function processMysqlDeltas (notes) {
     await saveDeltaToRedis(noteCode, noteDelta)
   }
 }
-
-// process.exit(0)
