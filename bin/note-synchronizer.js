@@ -15,7 +15,6 @@ const server = http.createServer((request, response) => {
 
     request.on('end', function () {
       const post = JSON.parse(body)
-      console.log(body)
       redisPersistenceBridge.saveDeltaToRedis(post.docName, post.delta)
     })
   }
