@@ -9,11 +9,13 @@ const redisPersistence = new RedisPersistence({
 })
 
 // needs to be tested
-async function saveDeltaToRedis (docName, delta) {
-  await redisPersistence.clearDocument(docName)
-  const doc = new yjs.Doc()
-  const persistedDoc = redisPersistence.bindState(docName, doc)
-  await persistedDoc.synced
-  doc.getText('note-quill-delta').applyDelta(delta)
-  await persistedDoc.synced
+module.exports = {
+  saveDeltaToRedis: async function (docName, delta) {
+    await redisPersistence.clearDocument(docName)
+    const doc = new yjs.Doc()
+    const persistedDoc = redisPersistence.bindState(docName, doc)
+    await persistedDoc.synced
+    doc.getText('note-quill-delta').applyDelta(delta)
+    await persistedDoc.synced
+  }
 }

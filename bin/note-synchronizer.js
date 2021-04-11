@@ -1,4 +1,4 @@
-const redisPersistence = require('./redis-persistence-bridge')
+const redisPersistenceBridge = require('./redis-persistence-bridge')
 
 const http = require('http')
 
@@ -16,14 +16,13 @@ const server = http.createServer((request, response) => {
     request.on('end', function () {
       const post = JSON.parse(body)
       console.log(body)
-      redisPersistence.saveDeltaToRedis(post.docName, post.delta)
+      redisPersistenceBridge.saveDeltaToRedis(post.docName, post.delta)
     })
   }
   response.writeHead(200, { 'Content-Type': 'text/plain' })
   response.end('okay')
 })
-console.log(host)
-console.log(port)
-server.listen(host, port)
+
+server.listen({ host, port })
 
 console.log(`note syncronizer is running at '${host}' on port ${port}`)

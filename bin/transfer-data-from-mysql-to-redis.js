@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { saveDeltaToRedis } from './redis-persistence-bridge'
+const redisPersistenceBridge = require('./redis-persistence-bridge')
 
 const mysql = require('mysql2')
 
@@ -46,6 +46,6 @@ async function processMysqlDeltas (notes) {
   for (const note of notes) {
     const noteCode = note.code
     const noteDelta = JSON.parse(note.ops_json)
-    await saveDeltaToRedis(noteCode, noteDelta)
+    await redisPersistenceBridge.saveDeltaToRedis(noteCode, noteDelta)
   }
 }
