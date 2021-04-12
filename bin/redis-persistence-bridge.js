@@ -1,8 +1,8 @@
 const yjs = require('yjs')
 const RedisPersistence = require('y-redis').RedisPersistence
 
-const REDIS_HOST = process.env.YPERSISTENCE_PATH || 'localhost'
-const REDIS_PORT = process.env.YPERSISTENCE_PORT || 6379
+const REDIS_HOST = process.env.YPERSISTENCE_REDIS_HOST || 'localhost'
+const REDIS_PORT = process.env.YPERSISTENCE_REDIS_PORT || 6379
 
 const redisPersistence = new RedisPersistence({
   redisOpts: { host: REDIS_HOST, port: REDIS_PORT }
