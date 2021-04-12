@@ -10,8 +10,8 @@ const host = process.env.YWEBSOCKET_HOST || 'localhost'
 const port = process.env.YWEBSOCKET_PORT || 1234
 
 const server = http.createServer((request, response) => {
-  response.writeHead(200, { 'Content-Type': 'text/plain' })
-  response.end('okay')
+  response.writeHead(200, { 'Content-Type': 'application/json' })
+  response.end(JSON.stringify({ status: 'ok' }))
 })
 
 wss.on('connection', setupWSConnection)

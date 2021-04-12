@@ -2,7 +2,7 @@ const yjs = require('yjs')
 const RedisPersistence = require('y-redis').RedisPersistence
 
 const REDIS_HOST = process.env.YPERSISTENCE_PATH || 'localhost'
-const REDIS_PORT = process.env.YPERSISTENCE_POSRT || 6379
+const REDIS_PORT = process.env.YPERSISTENCE_PORT || 6379
 
 const redisPersistence = new RedisPersistence({
   redisOpts: { host: REDIS_HOST, port: REDIS_PORT }
@@ -15,7 +15,7 @@ module.exports = {
     const doc = new yjs.Doc()
     const persistedDoc = redisPersistence.bindState(docName, doc)
     await persistedDoc.synced
-    doc.getText('note-quill-delta').applyDelta(delta)
+    doc.getText('delta').applyDelta(delta)
     await persistedDoc.synced
   }
 }
