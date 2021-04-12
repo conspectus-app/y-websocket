@@ -15,7 +15,9 @@ const server = http.createServer((request, response) => {
 
     request.on('end', function () {
       const post = JSON.parse(body)
-      redisPersistenceBridge.saveDeltaToRedis(post.docName, post.delta)
+      for (const sharedObject of post.sharedObjects) {
+        redisPersistenceBridge.saveQuillDeltaToRedis(post.documentName, sharedObject.name, sharedObject.delta)
+      }
     })
   }
   response.writeHead(200, { 'Content-Type': 'application/json' })

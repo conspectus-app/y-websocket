@@ -10,12 +10,12 @@ const redisPersistence = new RedisPersistence({
 
 // needs to be tested
 module.exports = {
-  saveDeltaToRedis: async function (docName, delta) {
-    await redisPersistence.clearDocument(docName)
+  saveQuillDeltaToRedis: async function (documentName, sharedObjectName, delta) {
+    await redisPersistence.clearDocument(documentName) // need to ivestigate how to clear single shared object, not entire doc
     const doc = new yjs.Doc()
-    const persistedDoc = redisPersistence.bindState(docName, doc)
+    const persistedDoc = redisPersistence.bindState(documentName, doc)
     await persistedDoc.synced
-    doc.getText('delta').applyDelta(delta)
+    doc.getText(sharedObjectName).applyDelta(delta)
     await persistedDoc.synced
   }
 }
