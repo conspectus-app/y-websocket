@@ -23,20 +23,23 @@ const wsReadyStateClosed = 3 // eslint-disable-line
 // disable gc when using snapshots!
 const gcEnabled = process.env.GC !== 'false' && process.env.GC !== '0'
 const persistenceStorage = process.env.YPERSISTENCE_STORAGE || 'level-db'
-const persistencePath = process.env.YPERSISTENCE_PATH
+const persistenceHost = process.env.YPERSISTENCE_REDIS_HOST || 'localhost'
+const persistencePort = process.env.YPERSISTENCE_REDIS_PORT || 6379
+const persistencePath = process.env.YPERSISTENCE_LEVELDB_PATH || 'db'
 
 /**
  * @type {{bindState: function(string,WSSharedDoc):void, writeState:function(string,WSSharedDoc):Promise<any>, provider: any}|null}
  */
 let persistence = null
 if (typeof persistencePath === 'string') {
-  console.info('Persisting documents to "' + persistencePath + '"')
   // @ts-ignore
   let persistenceDB
   if (persistenceStorage === 'redis') {
+    console.info('Persisting documents to "' + persistenceHost + '"')
     const RedisPersistence = require('y-redis').RedisPersistence
-    persistenceDB = new RedisPersistence({ redisOpts: { host: persistencePath } })
+    persistenceDB = new RedisPersistence({ redisOpts: { host: persistenceHost, port: persistencePort } })
   } else {
+    console.info('Persisting documents to "' + persistencePath + '"')
     const LeveldbPersistence = require('y-leveldb').LeveldbPersistence
     persistenceDB = new LeveldbPersistence(persistencePath)
   }
