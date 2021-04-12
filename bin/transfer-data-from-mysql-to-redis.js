@@ -26,26 +26,21 @@ mysqlConnection.connect(function (error) {
 })
 
 mysqlConnection.query(
-  'SELECT ' +
-    MYSQL_KEY_FIELD +
-    ', ' +
-    MYSQL_CONTENT_FIELD +
-    ' FROM ' +
-    MYSQL_TABLE,
-  function (error, notes, fields) {
+  `SELECT ${MYSQL_KEY_FIELD}, ${MYSQL_CONTENT_FIELD} FROM ${MYSQL_TABLE}`,
+  function (error, rows, fields) {
     if (error) {
       throw error
     }
     (async () => {
-      processMysqlDeltas(notes)
+      processMysqlDeltas(rows)
     })()
   }
 )
 
-async function processMysqlDeltas (notes) {
-  for (const note of notes) {
-    const noteCode = note.code
-    const noteDelta = JSON.parse(note.ops_json)
-    await redisPersistenceBridge.saveDeltaToRedis(noteCode, noteDelta)
+async function processMysqlDeltas (rows) {
+  for (const row of rows) {
+    const key = row[MYSQL_KEY_FIELD]
+    const delta = JSON.parse(row[MYSQL_CONTENT_FIELD])
+    await redisPersistenceBridge.saveDeltaToRedis(key, delta)
   }
 }
