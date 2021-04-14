@@ -22,15 +22,16 @@ server.on('upgrade', (request, socket, head) => {
   /**
     * @param {any} ws
     */
+
   const handleAuth = ws => {
     if (authenticator) {
-      const authenticatorInstance = require('./authenticators/' + authenticator)
-      if (!authenticatorInstance.authenticate(request)) {
-        return
-      }
+      const authenticate = require('./authenticators/' + authenticator).authenticate
+      authenticate(request).then(() => {
+        wss.emit('connection', ws, request)
+      })
+    } else {
+      wss.emit('connection', ws, request)
     }
-
-    wss.emit('connection', ws, request)
   }
   wss.handleUpgrade(request, socket, head, handleAuth)
 })

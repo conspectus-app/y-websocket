@@ -38,23 +38,28 @@ if (typeof persistencePath === 'string') {
     console.info('Persisting documents to "' + persistenceHost + '"')
     const RedisPersistence = require('y-redis').RedisPersistence
     persistenceDB = new RedisPersistence({ redisOpts: { host: persistenceHost, port: persistencePort } })
+    persistence = {
+      provider: persistenceDB,
+      bindState: persistenceDB.bindState,
+      writeState: async (docName, ydoc) => {}
+    }
   } else {
     console.info('Persisting documents to "' + persistencePath + '"')
     const LeveldbPersistence = require('y-leveldb').LeveldbPersistence
     persistenceDB = new LeveldbPersistence(persistencePath)
-  }
-  persistence = {
-    provider: persistenceDB,
-    bindState: async (docName, ydoc) => {
-      const persistedYdoc = await persistenceDB.getYDoc(docName)
-      const newUpdates = Y.encodeStateAsUpdate(ydoc)
-      persistenceDB.storeUpdate(docName, newUpdates)
-      Y.applyUpdate(ydoc, Y.encodeStateAsUpdate(persistedYdoc))
-      ydoc.on('update', update => {
-        persistenceDB.storeUpdate(docName, update)
-      })
-    },
-    writeState: async (docName, ydoc) => {}
+    persistence = {
+      provider: persistenceDB,
+      bindState: async (docName, ydoc) => {
+        const persistedYdoc = await persistenceDB.getYDoc(docName)
+        const newUpdates = Y.encodeStateAsUpdate(ydoc)
+        persistenceDB.storeUpdate(docName, newUpdates)
+        Y.applyUpdate(ydoc, Y.encodeStateAsUpdate(persistedYdoc))
+        ydoc.on('update', update => {
+          persistenceDB.storeUpdate(docName, update)
+        })
+      },
+      writeState: async (docName, ydoc) => {}
+    }
   }
 }
 
