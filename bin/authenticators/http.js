@@ -4,17 +4,13 @@ const authRequester = require('http')
 module.exports = {
   authenticate: function (request) {
     return new Promise(function (resolve, reject) {
-      let cookie = request.headers.cookie
-      if (!cookie) {
-        cookie = ''
-      }
       const docName = request.url.substring(1)
       const authCallbackWithRoomCode = authCallback + docName
       const authRequest = authRequester.request(authCallbackWithRoomCode,
         {
           method: 'GET',
           headers: {
-            Cookie: cookie
+            Cookie: request.headers.cookie || ''
           }
         },
         (response) => {
