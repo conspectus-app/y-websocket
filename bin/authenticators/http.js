@@ -1,11 +1,16 @@
 const authCallback = process.env.YWEBSOCKET_HTTP_AUTH_CALLBACK || 'http://localhost/auth/'
+const authCallbackParam = process.env.YWEBSOCKET_HTTP_AUTH_CALLBACK_GET_PARAM || 'code'
 const authRequester = require('http')
+const querystring = require('querystring')
 
 module.exports = {
   authenticate: function (request) {
     return new Promise(function (resolve, reject) {
       const docName = request.url.substring(1)
-      const authCallbackWithRoomCode = authCallback + docName
+      const query = querystring.stringify({
+        authCallbackParam: docName
+      })
+      const authCallbackWithRoomCode = authCallback + '?' + query
       const authRequest = authRequester.request(authCallbackWithRoomCode,
         {
           method: 'GET',

@@ -1,5 +1,3 @@
-const redisPersistenceBridge = require('./redis-persistence-bridge')
-
 const http = require('http')
 
 const host = process.env.YPERSISTENCE_SYNCHRONIZER_HOST || 'localhost'
@@ -16,7 +14,7 @@ const server = http.createServer((request, response) => {
     request.on('end', function () {
       const post = JSON.parse(body)
       for (const sharedObject of post.sharedObjects) {
-        redisPersistenceBridge.saveQuillDeltaToRedis(post.documentName, sharedObject.name, sharedObject.delta)
+        // redisPersistenceBridge.saveQuillDeltaToRedis(post.documentName, sharedObject.name, sharedObject.delta)
       }
     })
   }

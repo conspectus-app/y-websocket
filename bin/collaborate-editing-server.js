@@ -22,7 +22,6 @@ server.on('upgrade', (request, socket, head) => {
   /**
     * @param {any} ws
     */
-
   const handleAuth = ws => {
     if (authenticator) {
       const authenticate = require('./authenticators/' + authenticator).authenticate
