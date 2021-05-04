@@ -22,44 +22,28 @@ const wsReadyStateClosed = 3 // eslint-disable-line
 
 // disable gc when using snapshots!
 const gcEnabled = process.env.GC !== 'false' && process.env.GC !== '0'
-const persistenceStorage = process.env.YPERSISTENCE_STORAGE || 'level-db'
-const persistenceHost = process.env.YPERSISTENCE_REDIS_HOST || 'localhost'
-const persistencePort = process.env.YPERSISTENCE_REDIS_PORT || 6379
-const persistencePath = process.env.YPERSISTENCE_LEVELDB_PATH || 'db'
-
+const persistenceDir = process.env.YPERSISTENCE_LEVELDB_PATH
 /**
  * @type {{bindState: function(string,WSSharedDoc):void, writeState:function(string,WSSharedDoc):Promise<any>, provider: any}|null}
  */
 let persistence = null
-if (typeof persistencePath === 'string') {
+if (typeof persistenceDir === 'string') {
+  console.info('Persisting documents to "' + persistenceDir + '"')
   // @ts-ignore
-  let persistenceDB
-  if (persistenceStorage === 'redis') {
-    console.info('Persisting documents to "' + persistenceHost + '"')
-    const RedisPersistence = require('y-redis').RedisPersistence
-    persistenceDB = new RedisPersistence({ redisOpts: { host: persistenceHost, port: persistencePort } })
-    persistence = {
-      provider: persistenceDB,
-      bindState: persistenceDB.bindState,
-      writeState: async (docName, ydoc) => {}
-    }
-  } else {
-    console.info('Persisting documents to "' + persistencePath + '"')
-    const LeveldbPersistence = require('y-leveldb').LeveldbPersistence
-    persistenceDB = new LeveldbPersistence(persistencePath)
-    persistence = {
-      provider: persistenceDB,
-      bindState: async (docName, ydoc) => {
-        const persistedYdoc = await persistenceDB.getYDoc(docName)
-        const newUpdates = Y.encodeStateAsUpdate(ydoc)
-        persistenceDB.storeUpdate(docName, newUpdates)
-        Y.applyUpdate(ydoc, Y.encodeStateAsUpdate(persistedYdoc))
-        ydoc.on('update', update => {
-          persistenceDB.storeUpdate(docName, update)
-        })
-      },
-      writeState: async (docName, ydoc) => {}
-    }
+  const LeveldbPersistence = require('y-leveldb').LeveldbPersistence
+  const ldb = new LeveldbPersistence(persistenceDir)
+  persistence = {
+    provider: ldb,
+    bindState: async (docName, ydoc) => {
+      const persistedYdoc = await ldb.getYDoc(docName)
+      const newUpdates = Y.encodeStateAsUpdate(ydoc)
+      ldb.storeUpdate(docName, newUpdates)
+      Y.applyUpdate(ydoc, Y.encodeStateAsUpdate(persistedYdoc))
+      ydoc.on('update', update => {
+        ldb.storeUpdate(docName, update)
+      })
+    },
+    writeState: async (docName, ydoc) => {}
   }
 }
 

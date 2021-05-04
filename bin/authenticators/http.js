@@ -1,5 +1,7 @@
-const authCallback = process.env.YWEBSOCKET_HTTP_AUTH_CALLBACK || 'http://localhost/auth/'
-const authCallbackParam = process.env.YWEBSOCKET_HTTP_AUTH_CALLBACK_GET_PARAM || 'code'
+const authCallback =
+  process.env.YWEBSOCKET_HTTP_AUTH_CALLBACK || 'http://localhost/auth/'
+const authCallbackParam =
+  process.env.YWEBSOCKET_HTTP_AUTH_CALLBACK_GET_PARAM || 'code'
 const authRequester = require('http')
 const querystring = require('querystring')
 
@@ -8,23 +10,24 @@ module.exports = {
     return new Promise(function (resolve, reject) {
       const docName = request.url.substring(1)
       const query = querystring.stringify({
-        authCallbackParam: docName
+        [authCallbackParam]: docName
       })
       const authCallbackWithRoomCode = authCallback + '?' + query
-      const authRequest = authRequester.request(authCallbackWithRoomCode,
+      const authRequest = authRequester.request(
+        authCallbackWithRoomCode,
         {
           method: 'GET',
           headers: {
             Cookie: request.headers.cookie || ''
           }
         },
-        (response) => {
+        response => {
           if (response.statusCode < 200 || response.statusCode >= 300) {
             return reject(new Error('statusCode=' + response.statusCode))
           }
           response.setEncoding('utf8')
           let rawData = ''
-          response.on('data', (chunk) => {
+          response.on('data', chunk => {
             rawData += chunk
           })
           response.on('end', () => {
@@ -33,11 +36,12 @@ module.exports = {
               resolve(true)
             }
           })
-          authRequest.on('error', function (error) {
-            reject(error)
-          })
-          authRequest.end()
-        })
+        }
+      )
+      authRequest.on('error', function (error) {
+        reject(error)
+      })
+      authRequest.end()
     })
   }
 }
