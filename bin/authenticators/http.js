@@ -16,6 +16,7 @@ module.exports = {
         authRequester = require('http')
       }
       const authCallbackWithRoomCode = authCallback + '?' + query
+      console.log(authCallbackWithRoomCode)
       const authRequest = authRequester.request(
         authCallbackWithRoomCode,
         {
