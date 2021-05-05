@@ -32,10 +32,12 @@ module.exports = {
           response.setEncoding('utf8')
           let rawData = ''
           response.on('data', chunk => {
+            console.log(chunk)
             rawData += chunk
           })
           response.on('end', () => {
             const data = JSON.parse(rawData)
+            console.log(rawData)
             if (data.status === 'ok') {
               resolve(true)
             }
