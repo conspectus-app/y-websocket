@@ -2,6 +2,7 @@ const http = require('http')
 
 const host = process.env.YPERSISTENCE_SYNCHRONIZER_HOST || 'localhost'
 const port = process.env.YPERSISTENCE_SYNCHRONIZER_PORT || 1235
+const leveldbPersistenceBridge = require('./leveldb-persistence-bridge')
 
 const server = http.createServer((request, response) => {
   if (request.method === 'POST') {
@@ -14,7 +15,7 @@ const server = http.createServer((request, response) => {
     request.on('end', function () {
       const post = JSON.parse(body)
       for (const sharedObject of post.sharedObjects) {
-        // redisPersistenceBridge.saveQuillDeltaToRedis(post.documentName, sharedObject.name, sharedObject.delta)
+        leveldbPersistenceBridge(post.documentName, sharedObject.name, sharedObject.delta)
       }
     })
   }
