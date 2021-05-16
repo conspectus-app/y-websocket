@@ -19,7 +19,7 @@ setInterval(() => {
       sharedObject.delta
     )
   }
-})
+}, 20)
 
 const server = http.createServer((request, response) => {
   if (request.method === 'POST') {
