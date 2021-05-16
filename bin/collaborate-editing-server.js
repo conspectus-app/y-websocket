@@ -8,6 +8,7 @@ const setupWSConnection = require('./utils.js').setupWSConnection
 
 const host = process.env.YWEBSOCKET_HOST || 'localhost'
 const port = process.env.YWEBSOCKET_PORT || 1234
+const authenticator = process.env.YWEBSOCKET_AUTHENTICATOR || null
 
 const server = http.createServer((request, response) => {
   response.writeHead(200, { 'Content-Type': 'application/json' })
@@ -22,7 +23,14 @@ server.on('upgrade', (request, socket, head) => {
     * @param {any} ws
     */
   const handleAuth = ws => {
-    wss.emit('connection', ws, request)
+    if (authenticator) {
+      const authenticate = require('./authenticators/' + authenticator).authenticate
+      authenticate(request).then(() => {
+        wss.emit('connection', ws, request)
+      })
+    } else {
+      wss.emit('connection', ws, request)
+    }
   }
   wss.handleUpgrade(request, socket, head, handleAuth)
 })
