@@ -35,6 +35,7 @@ module.exports = {
           })
           response.on('end', () => {
             const data = JSON.parse(rawData)
+            
             if (data.status === 'ok') {
               resolve(true)
             }

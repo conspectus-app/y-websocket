@@ -10,11 +10,15 @@ setInterval(() => {
   if (synchronizationQueue.length === 0) {
     return
   }
-  const post = synchronizationQueue.pop()
-  for (const sharedObject of post.shared_objects) {
-    console.log(post.document_name, sharedObject.name, sharedObject.delta)
+  const post = synchronizationQueue.shift()
+  console.log(post)
+  if (!post.sharedObjects) {
+      return
+  }
+  for (const sharedObject of post.sharedObjects) {
+    console.log(post.documentName, sharedObject.name, sharedObject.delta)
     leveldbPersistenceInstance.saveQuillDeltaToLevelDB(
-      post.document_name,
+      post.documentName,
       sharedObject.name,
       sharedObject.delta
     )
@@ -31,7 +35,7 @@ const server = http.createServer((request, response) => {
 
     request.on('end', function () {
       const post = JSON.parse(body)
-      synchronizationQueue.unshift(post)
+      synchronizationQueue.push(post)
     })
   }
   response.writeHead(200, { 'Content-Type': 'application/json' })
