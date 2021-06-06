@@ -10,6 +10,7 @@ const map = require('lib0/dist/map.cjs')
 const debounce = require('lodash.debounce')
 
 const callbackHandler = require('./callback.js').callbackHandler
+const persistHandler = require('./callback.js').persistHandler
 const isCallbackSet = require('./callback.js').isCallbackSet
 
 const CALLBACK_DEBOUNCE_WAIT = parseInt(process.env.CALLBACK_DEBOUNCE_WAIT) || 2000
@@ -126,6 +127,7 @@ class WSSharedDoc extends Y.Doc {
     }
     this.awareness.on('update', awarenessChangeHandler)
     this.on('update', updateHandler)
+    this.on('update', debounce(persistHandler, 1000, { maxWait: 5000}))
     if (isCallbackSet) {
       this.on('update', debounce(
         callbackHandler,

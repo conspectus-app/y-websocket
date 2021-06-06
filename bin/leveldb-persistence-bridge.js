@@ -12,6 +12,8 @@ module.exports = {
     sharedObjectName,
     delta
   ) {
+    console.log('saving to yjs')
+    console.log(documentName, sharedObjectName, delta)
     const leveldbPersistenceInstance = this.getLeveldbPersistenceInsatnce()
     await leveldbPersistenceInstance.clearDocument(documentName) // need to ivestigate how to clear single shared object, not entire doc
     const doc = await getYDoc(documentName)

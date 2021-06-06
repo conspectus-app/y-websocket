@@ -1,10 +1,34 @@
 const http = require('http')
+const mysqlConnection = require('./connections/mysql').mysqlConnection
 
-const CALLBACK_URL = process.env.CALLBACK_URL ? new URL(process.env.CALLBACK_URL) : null
-const CALLBACK_TIMEOUT = process.env.CALLBACK_TIMEOUT || 5000
-const CALLBACK_OBJECTS = process.env.CALLBACK_OBJECTS ? JSON.parse(process.env.CALLBACK_OBJECTS) : {}
+const CALLBACK_URL = process.env.CALLBACK_URL
+  ? new URL(process.env.CALLBACK_URL)
+  : null
+const CALLBACK_TIMEOUT = process.env.CALLBACK_TIMEOUT || 1000
+const CALLBACK_OBJECTS = process.env.CALLBACK_OBJECTS
+  ? JSON.parse(process.env.CALLBACK_OBJECTS)
+  : {}
+const MYSQL_TABLE = process.env.MYSQL_TABLE || 'table'
+const MYSQL_CONTENT_FIELDS = process.env.MYSQL_CONTENT_FIELDS || 'content'
+const MYSQL_KEY_FIELD = process.env.MYSQL_KEY_FIELD || 'id'
 
 exports.isCallbackSet = !!CALLBACK_URL
+
+/**
+ * @param {Uint8Array} update
+ * @param {any} origin
+ * @param {WSSharedDoc} doc
+ */
+exports.persistHandler = (update, origin, doc) => {
+  const note_code = doc.name
+  const note_ops = JSON.stringify(doc.getText('quill').toDelta())
+  console.log(note_code, note_ops)
+  mysqlConnection.query(
+    `UPDATE ${MYSQL_TABLE} SET ${MYSQL_CONTENT_FIELDS} = ? WHERE ${MYSQL_KEY_FIELD} = ?`,
+    [note_ops, note_code],
+    function (error, rows, fields) {}
+  )
+}
 
 /**
  * @param {Uint8Array} update
@@ -51,7 +75,7 @@ const callbackRequest = (url, timeout, data) => {
     console.warn('Callback request timed out.')
     req.abort()
   })
-  req.on('error', (e) => {
+  req.on('error', e => {
     console.error('Callback request error.', e)
     req.abort()
   })
@@ -66,11 +90,17 @@ const callbackRequest = (url, timeout, data) => {
  */
 const getContent = (objName, objType, doc) => {
   switch (objType) {
-    case 'Array': return doc.getArray(objName)
-    case 'Map': return doc.getMap(objName)
-    case 'Text': return doc.getText(objName)
-    case 'XmlFragment': return doc.getXmlFragment(objName)
-    case 'XmlElement': return doc.getXmlElement(objName)
-    default : return {}
+    case 'Array':
+      return doc.getArray(objName)
+    case 'Map':
+      return doc.getMap(objName)
+    case 'Text':
+      return doc.getText(objName)
+    case 'XmlFragment':
+      return doc.getXmlFragment(objName)
+    case 'XmlElement':
+      return doc.getXmlElement(objName)
+    default:
+      return {}
   }
 }

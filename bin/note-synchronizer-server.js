@@ -11,12 +11,10 @@ setInterval(() => {
     return
   }
   const post = synchronizationQueue.shift()
-  console.log(post)
   if (!post.sharedObjects) {
       return
   }
   for (const sharedObject of post.sharedObjects) {
-    console.log(post.documentName, sharedObject.name, sharedObject.delta)
     leveldbPersistenceInstance.saveQuillDeltaToLevelDB(
       post.documentName,
       sharedObject.name,
