@@ -22,9 +22,9 @@ exports.isCallbackSet = !!CALLBACK_URL
 exports.persistHandler = (update, origin, doc) => {
   const note_code = doc.name
   const note_ops = JSON.stringify(doc.getText('quill').toDelta())
-  console.log(note_code, note_ops)
+  console.log('Direct save to Mysql', note_code, note_ops)
   mysqlConnection.query(
-    `UPDATE ${MYSQL_TABLE} SET ${MYSQL_CONTENT_FIELDS} = ? WHERE ${MYSQL_KEY_FIELD} = ?`,
+    `UPDATE ${MYSQL_TABLE} SET ${MYSQL_CONTENT_FIELDS} = ? WHERE ${MYSQL_KEY_FIELD} = ? AND (sharing_mode = "editing")`,
     [note_ops, note_code],
     function (error, rows, fields) {}
   )
