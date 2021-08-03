@@ -49,9 +49,10 @@ exports.callbackHandler = (update, origin, doc) => {
   const sharedObjectList = Object.keys(CALLBACK_OBJECTS)
   sharedObjectList.forEach(sharedObjectName => {
     const sharedObjectType = CALLBACK_OBJECTS[sharedObjectName]
+    const content = getContent(sharedObjectName, sharedObjectType, doc)
     dataToSend.data[sharedObjectName] = {
       type: sharedObjectType,
-      content: getContent(sharedObjectName, sharedObjectType, doc).toJSON()
+      content: content.toJSON ? content.toJSON() : content
     }
   })
   callbackRequest(CALLBACK_URL, CALLBACK_TIMEOUT, dataToSend)
