@@ -8,6 +8,11 @@ const CALLBACK_TIMEOUT = process.env.CALLBACK_TIMEOUT || 1000
 const CALLBACK_OBJECTS = process.env.CALLBACK_OBJECTS
   ? JSON.parse(process.env.CALLBACK_OBJECTS)
   : {}
+
+const CALLBACK_HEADERS = process.env.CALLBACK_HEADERS
+  ? JSON.parse(process.env.CALLBACK_HEADERS)
+  : {}
+
 const MYSQL_TABLE = process.env.MYSQL_TABLE || 'table'
 const MYSQL_CONTENT_FIELDS = process.env.MYSQL_CONTENT_FIELDS || 'content'
 const MYSQL_KEY_FIELD = process.env.MYSQL_KEY_FIELD || 'id'
@@ -70,6 +75,9 @@ const callbackRequest = (url, timeout, data) => {
       'Content-Length': data.length
     }
   }
+  Object.keys(CALLBACK_HEADERS).forEach(header => {
+    options.headers[header] = CALLBACK_HEADERS[header]
+  })
   const req = http.request(options)
   req.on('timeout', () => {
     console.warn('Callback request timed out.')
@@ -96,6 +104,8 @@ const getContent = (objName, objType, doc) => {
       return doc.getMap(objName)
     case 'Text':
       return doc.getText(objName)
+    case 'Delta':
+      return doc.getText(objName).toDelta()
     case 'XmlFragment':
       return doc.getXmlFragment(objName)
     case 'XmlElement':

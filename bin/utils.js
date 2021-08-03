@@ -127,7 +127,7 @@ class WSSharedDoc extends Y.Doc {
     }
     this.awareness.on('update', awarenessChangeHandler)
     this.on('update', updateHandler)
-    this.on('update', debounce(persistHandler, 1000, { maxWait: 5000}))
+    // this.on('update', debounce(persistHandler, 1000, { maxWait: 5000}))
     if (isCallbackSet) {
       this.on('update', debounce(
         callbackHandler,
