@@ -1,6 +1,18 @@
 const authCallback = process.env.YWEBSOCKET_HTTP_AUTH_CALLBACK || 'http://localhost/auth/'
 const authCallbackParam = process.env.YWEBSOCKET_HTTP_AUTH_CALLBACK_GET_PARAM || 'code'
+const configuredAuthTimeout = Number(process.env.YWEBSOCKET_HTTP_AUTH_TIMEOUT || 5000)
+const authTimeout = Number.isFinite(configuredAuthTimeout) && configuredAuthTimeout > 0
+  ? configuredAuthTimeout
+  : 5000
 const querystring = require('querystring')
+
+const createAuthError = function (message, statusCode) {
+  const error = new Error(message)
+  if (statusCode) {
+    error.statusCode = statusCode
+  }
+  return error
+}
 
 module.exports = {
   authenticate: function (request) {
@@ -20,28 +32,41 @@ module.exports = {
         authCallbackWithRoomCode,
         {
           method: 'GET',
+          timeout: authTimeout,
           headers: {
             Cookie: request.headers.cookie || ''
           }
         },
         response => {
           if (response.statusCode < 200 || response.statusCode >= 300) {
-            return reject(new Error('statusCode=' + response.statusCode))
+            response.resume()
+            return reject(createAuthError('statusCode=' + response.statusCode, response.statusCode))
           }
           response.setEncoding('utf8')
           let rawData = ''
           response.on('data', chunk => {
             rawData += chunk
           })
+          response.on('error', reject)
           response.on('end', () => {
-            const data = JSON.parse(rawData)
-            
-            if (data.status === 'ok') {
-              resolve(true)
+            let data
+            try {
+              data = JSON.parse(rawData)
+            } catch (error) {
+              return reject(createAuthError('Invalid authentication response: ' + error.message))
             }
+
+            if (data.status === 'ok') {
+              return resolve(true)
+            }
+
+            reject(createAuthError('Authentication denied', 403))
           })
         }
       )
+      authRequest.on('timeout', function () {
+        authRequest.destroy(createAuthError('Authentication request timed out'))
+      })
       authRequest.on('error', function (error) {
         reject(error)
       })

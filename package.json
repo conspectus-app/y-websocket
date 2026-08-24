@@ -15,6 +15,7 @@
     "dist": "rm -rf dist && rollup -c && tsc",
     "lint": "standard && tsc",
     "test": "npm run lint",
+    "test:auth": "standard bin/authenticators/http.js bin/authenticate-websocket.js bin/collaborate-editing-server.js bin/authentication.test.js && node ./bin/authentication.test.js",
     "preversion": "npm run lint && npm run dist && test -e dist/src/y-websocket.d.ts && test -e dist/y-websocket.cjs"
   },
   "bin": {

@@ -5,6 +5,7 @@ const WebSocket = require('ws')
 const http = require('http')
 const wss = new WebSocket.Server({ noServer: true })
 const setupWSConnection = require('./utils.js').setupWSConnection
+const authenticateWebSocket = require('./authenticate-websocket.js').authenticateWebSocket
 
 const host = process.env.YWEBSOCKET_HOST || 'localhost'
 const port = process.env.YWEBSOCKET_PORT || 1234
@@ -25,7 +26,7 @@ server.on('upgrade', (request, socket, head) => {
   const handleAuth = ws => {
     if (authenticator) {
       const authenticate = require('./authenticators/' + authenticator).authenticate
-      authenticate(request).then(() => {
+      authenticateWebSocket(authenticate, request, ws, () => {
         wss.emit('connection', ws, request)
       })
     } else {
